@@ -12,7 +12,24 @@ import {
 import {
   ScrollMagicPluginGsap
 } from "scrollmagic-plugin-gsap";
+import {
+  library
+} from '@fortawesome/fontawesome-svg-core';
+import {
+  faEnvelope
+} from '@fortawesome/free-solid-svg-icons';
+import {
+  faBasketballBall
+} from '@fortawesome/free-solid-svg-icons';
+
+import {
+  FontAwesomeIcon
+} from '@fortawesome/vue-fontawesome';
+
+library.add(faEnvelope, faBasketballBall);
+
 ScrollMagicPluginGsap(ScrollMagic, TweenMax, TimelineMax);
+Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 Vue.config.productionTip = false
 

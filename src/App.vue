@@ -1,6 +1,12 @@
 <template lang="pug">
   #app
     .cursor(ref="cursor")
+    .icons
+      .icon
+        <font-awesome-icon icon="envelope" />
+      .icon
+        <font-awesome-icon icon="basketball-ball" />
+
     #nav
       router-link(to="/") Home
       router-link(to="/about") About
@@ -12,11 +18,15 @@ export default {
   mounted() {
     document.addEventListener("mousemove", (e) => {
       var cursor = this.$refs.cursor;
-      cursor.style.top = e.clientY - 20 + "px";
-      cursor.style.left = e.clientX - 20 + "px";
+      cursor.style.WebkitTransform = `translate(${e.clientX -
+        20}px,${e.clientY - 20}px)`;
     });
   },
-  methods: {},
+  methods: {
+    test() {
+      console.log("object");
+    },
+  },
 };
 </script>
 
@@ -29,6 +39,9 @@ html,
 body {
   margin: 0;
   overflow-x: hidden;
+  ::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @font-face {
@@ -58,7 +71,7 @@ body {
 .cursor {
   position: fixed;
   transform-style: preserve-3d;
-  z-index: 999;
+  z-index: 9999;
   background-color: #ffdc51c2;
   width: 40px;
   height: 40px;
@@ -66,6 +79,8 @@ body {
   left: 0;
   pointer-events: none;
   border-radius: 50%;
+  mix-blend-mode: screen;
+
   &::before {
     content: "";
     border-radius: 50%;
@@ -89,6 +104,7 @@ body {
   display: flex;
   box-sizing: border-box;
   justify-content: flex-end;
+  z-index: 998;
   a {
     font-weight: bold;
     color: #d3d6da;
@@ -100,6 +116,32 @@ body {
     }
   }
 }
+.icons {
+  position: fixed;
+  left: 0;
+  bottom: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  z-index: 999;
+
+  flex-direction: column;
+  background-color: rgba(255, 255, 255, 0.105);
+  border-radius: 0px 10px 10px 0px;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .icon {
+    color: white;
+    margin: 2px;
+    font-size: 1.3rem;
+    transition: 0.3s;
+    display: block;
+    &:hover {
+      font-size: 2rem;
+    }
+  }
+}
 
 @keyframes twinkle {
   0% {
@@ -107,6 +149,14 @@ body {
   }
   100% {
     opacity: 1;
+  }
+}
+@keyframes shake {
+  0% {
+    transform: translate(-50%, -10px);
+  }
+  100% {
+    transform: translate(-50%, 0px);
   }
 }
 </style>

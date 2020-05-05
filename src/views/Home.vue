@@ -4,6 +4,7 @@
     //-   .light(ref="light")
     //-   h2 Dora
     .page.flex-center
+
       .containers 
         .titles(@mouseover="hoverTitle" ref="light").pattern-dots-xl.max-w-40pc
           .t 哆
@@ -19,8 +20,20 @@
       #people.peopleContainer(@mouseleave="hoverCharacter(false)" 
       @mouseenter="hoverCharacter(true)" ref="people")
       .btn(@click="again")
-        h3 Welcome
-    .page.red
+        h3 Scroll Down
+    .page.secondpage
+      .forbg.pattern-grid-lg
+      .innerpage
+        .texts
+          .title.subtitle Xie Chung Ying
+          .subtitle UI Design
+          .subtitle Front End Developer
+          .subtitle Js / Vue
+          .subtitle Flutter
+      .innerpage
+      .check
+        .text see more
+        .text v 
 </template>
 
 <script>
@@ -41,7 +54,8 @@ export default {
       lottieD: "",
       hoverFlag: false,
       MagicController: "",
-      nowScene: 0,
+      nowScene: [17, 32],
+      testvar: 0,
     };
   },
   components: {},
@@ -49,13 +63,28 @@ export default {
     this.initLottie();
     this.initTimeLine();
     this.initScrollMagic();
+    console.log(screen.height);
+    console.log(screen.width);
   },
   methods: {
     initScrollMagic() {
+      var vm = this;
+
       this.MagicController = new ScrollMagic.Controller();
-      var blockTween = gsap.timeline().to("#people", {
-        y: window.innerHeight - window.innerHeight / 10,
-        x: window.innerWidth / 4,
+      var x = window.innerWidth;
+      if (window.innerWidth > 1300) {
+        x = 1300;
+      }
+      var peopleTween = gsap.timeline().to("#people", {
+        y: window.innerHeight - 90,
+        x: x / 4,
+        scale: 1.2,
+      });
+      var subtitle = gsap.timeline().from(".subtitle", {
+        opacity: 0,
+        stagger: 0.2,
+        scale: 0.8,
+        y: 90,
       });
 
       // eslint-disable-next-line no-unused-vars
@@ -65,13 +94,36 @@ export default {
         triggerElement: this.$people, // starting scene, when reaching this element
         triggerHook: 0, // don't trigger until #pinned-trigger1 hits the top of the viewport
       })
-        .setTween(blockTween)
+        .setTween(peopleTween)
         .addTo(this.MagicController);
-      scene.on("end", this.firstScene(1));
+      // eslint-disable-next-line no-unused-vars
+      var scene2 = new ScrollMagic.Scene({
+        offset: screen.height / 3, // start scene after scrolling for 100px
+        duration: (screen.height / 3) * 2 - 200, // pin the element for 400px of scrolling
+        // duration: (screen.height / 3) * 2 - 100, // pin the element for 400px of scrolling
+        triggerElement: this.$people, // starting scene, when reaching this element
+        triggerHook: 0, // don't trigger until #pinned-trigger1 hits the top of the viewport
+      })
+        .setTween(subtitle)
+        .addTo(this.MagicController);
+
+      scene.on("end", () => {
+        vm.lottieD.playSegments([0, 16], true);
+        vm.nowScene = [0, 16];
+      });
+      scene.on("progress", function(event) {
+        console.log("Scene progress changed to " + event.progress);
+        console.log(10 + Math.floor(event.progress * 10));
+        var frame = 43 + Math.floor(event.progress * 10);
+        if (frame > 43 && frame < 53) {
+          vm.lottieD.goToAndStop(frame, true);
+        } else {
+          vm.lottieD.playSegments([17, 32], true);
+        }
+      });
     },
-    firstScene(nowScene) {
-      console.log("end");
-      this.nowScene = nowScene;
+    playnowScene() {
+      this.lottieD.playSegments([0, 16], true);
     },
     initTimeLine() {
       this.timeline = gsap.timeline();
@@ -124,28 +176,32 @@ export default {
         autoplay: true,
         animationData: require("../assets/bodymovin/data.json"), // the path to the animation json
       });
-      var vm = this;
+      // var vm = this;
       this.lottieD.playSegments([17, 32], true);
-      this.lottieD.addEventListener("loopComplete", () => {
-        if (vm.hoverFlag) {
-          vm.lottieD.pause();
-        } else {
-          vm.lottieD.play();
-        }
-      });
+      // this.lottieD.addEventListener("loopComplete", () => {
+      //   console.log("Looped");
+      //   if (vm.hoverFlag) {
+      //     vm.lottieD.pause();
+      //   } else {
+      //     vm.lottieD.play();
+      //   }
+      // });
     },
     hoverCharacter(flag) {
       if (flag) {
         this.lottieD.playSegments([34, 56], true);
         this.hoverFlag = flag;
       } else {
-        this.lottieD.playSegments([17, 32], true);
+        this.lottieD.playSegments(this.nowScene, true);
         this.hoverFlag = flag;
       }
     },
     again() {
       this.timeline2.restart();
       this.timeline.restart();
+      // this.lottieD.goToAndStop(this.testvar, true);
+      // console.log(this.testvar);
+      // this.testvar++;
     },
     hoverTitle() {},
     ligth_anim() {
@@ -167,13 +223,16 @@ export default {
 .home {
   cursor: none;
   overflow-x: auto;
-
   background: #171717;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
   overflow-x: hidden;
+  .peopleContainer {
+    max-width: calc(100vh / 3);
+    z-index: 999;
+  }
   .page {
     width: 100vw;
     height: 100vh;
@@ -181,11 +240,71 @@ export default {
     padding: 20px;
     width: 100vw;
     height: 100vh;
-    background: #171717;
+
     flex-direction: column;
+    position: relative;
+    .forbg {
+      background-color: #171717;
+      color: rgba(255, 255, 255, 0.1);
+      width: 90vw;
+      height: 70vh;
+      max-width: 1300px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .check {
+      position: absolute;
+      bottom: 3%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.5rem;
+      color: white;
+      animation: shake 0.4s infinite alternate ease-in-out;
+    }
+    .innerpage {
+      max-width: 650px;
+
+      color: white;
+      padding: 2rem;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: 1;
+      flex-direction: column;
+      // border: solid rgba(255, 255, 255, 0.242) 1px;
+      .texts {
+        color: #ffdd51;
+        font-family: "GenJyuuGothic-Heavy";
+        display: flex;
+        flex-direction: column;
+        transform: skew(0deg, -5deg) !important;
+      }
+      .title {
+        font-size: 3rem !important;
+        color: #ffdd51 !important;
+        margin-bottom: 20px;
+      }
+      .subtitle {
+        width: 100%;
+        font-size: 2rem;
+        text-align: left;
+        color: white;
+        &:hover {
+          color: #ffdd51;
+        }
+      }
+    }
   }
-  .red {
-    background-color: darkred;
+  .secondpage {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    position: relative;
   }
   .flex-center {
     display: flex;

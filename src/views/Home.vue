@@ -3,8 +3,14 @@
     //- .card
     //-   .light(ref="light")
     //-   h2 Dora
+    .pin 
+      .msgbox
+        .box
+          .msg(v-for="letter in splitPinMsg(this.pinMsg)") {{letter}}
+        .box
+          .msgs(v-for="letter in splitPinMsg('自我介紹')") {{letter}}
+      .line
     .page.flex-center
-
       .containers 
         .titles(@mouseover="hoverTitle" ref="light").pattern-dots-xl.max-w-40pc
           .t 哆
@@ -15,15 +21,15 @@
           .t.small 實
           .t.small 驗
           .t.small 室
-          .t.small doraralab
+          .t.small Doraralab
       //- #people(style="width:100px;height:100px;background-color:red;position:relative")
       #people.peopleContainer(@mouseleave="hoverCharacter(false)" 
-      @mouseenter="hoverCharacter(true)" ref="people")
-      .btn(@click="again")
+      @mouseenter="hoverCharacter(true)" ref="people" @click="clickCharacter")
+      .btn(@click="again" )
         h3 Scroll Down
-    .page.secondpage
-      .forbg.pattern-grid-lg
-      .innerpage
+    .page.secondpage(ref="secondpage")
+      .forbg.pattern-grid-lg#bg(ref="bg")
+      .innerpage.innerpageL
         .texts
           .title.subtitle Xie Chung Ying
           .subtitle UI Design
@@ -34,6 +40,7 @@
       .check
         .text see more
         .text v 
+    .page
 </template>
 
 <script>
@@ -56,6 +63,7 @@ export default {
       MagicController: "",
       nowScene: [17, 32],
       testvar: 0,
+      pinMsg: "歡迎光臨",
     };
   },
   components: {},
@@ -63,10 +71,64 @@ export default {
     this.initLottie();
     this.initTimeLine();
     this.initScrollMagic();
+    this.initP5();
     console.log(screen.height);
     console.log(screen.width);
+    console.log(window.innerHeight);
+    console.log(window.innerWidth);
   },
+  computed: {},
   methods: {
+    initP5() {
+      var vm = this;
+      const script = function(p5) {
+        var speed = 2;
+        var posX = 0;
+        var width = vm.$refs.bg.clientWidth;
+        var height = vm.$refs.bg.clientHeight;
+        console.log(p5.width);
+
+        // NOTE: Set up is here
+        p5.setup = () => {
+          p5.createCanvas(width, height);
+        };
+        // NOTE: Draw is here
+        p5.draw = () => {
+          // p5.background("#171717");
+          const degree = p5.frameCount * 3;
+          const y = p5.sin(p5.radians(degree)) * 50;
+          p5.push();
+          p5.noStroke();
+          p5.translate(0, p5.height / 2);
+          p5.ellipse(posX, y, 10, 10);
+          p5.pop();
+          drawRec(2);
+          posX += speed;
+
+          if (posX > p5.width || posX < 0) {
+            speed *= -1;
+          }
+        };
+        const drawRec = (x) => {
+          p5.push();
+          p5.stroke(255, 255, 255, 100);
+          p5.strokeWeight(2);
+          p5.fill(240, 150, 150);
+          p5.noFill();
+          for (var i = 0; i < x; i++) {
+            p5.rect(i * 48 + 2, 2, 48, 48);
+          }
+          p5.pop();
+        };
+      };
+      // NOTE: Use p5 as an instance mode
+      const P5 = require("p5");
+      new P5(script, "bg");
+    },
+    splitPinMsg(tg) {
+      return tg.split("");
+    },
+    clickCharacter() {},
     initScrollMagic() {
       var vm = this;
 
@@ -77,7 +139,7 @@ export default {
       }
       var peopleTween = gsap.timeline().to("#people", {
         y: window.innerHeight - 90,
-        x: x / 4,
+        x: x / 4 - window.innerWidth / 20,
         scale: 1.2,
       });
       var subtitle = gsap.timeline().from(".subtitle", {
@@ -86,39 +148,60 @@ export default {
         scale: 0.8,
         y: 90,
       });
+      var pinMsgTween = gsap.timeline().to(".msg", {
+        opacity: 0,
+        stagger: 0.2,
+        scale: 0.8,
+        y: 90,
+      });
+      var pinMsgTween2 = gsap.timeline().from(".msgs", {
+        opacity: 0,
+        stagger: 0.2,
+      });
 
       // eslint-disable-next-line no-unused-vars
       var scene = new ScrollMagic.Scene({
         offset: 100, // start scene after scrolling for 100px
-        duration: screen.height / 2, // pin the element for 400px of scrolling
+        duration: window.innerHeight / 2, // pin the element for 400px of scrolling
         triggerElement: this.$people, // starting scene, when reaching this element
         triggerHook: 0, // don't trigger until #pinned-trigger1 hits the top of the viewport
       })
         .setTween(peopleTween)
         .addTo(this.MagicController);
       // eslint-disable-next-line no-unused-vars
+      var Pinscene = new ScrollMagic.Scene({
+        offset: 100, // start scene after scrolling for 100px
+        duration: window.innerHeight / 2, // pin the element for 400px of scrolling
+        triggerHook: 0, // don't trigger until #pinned-trigger1 hits the top of the viewport
+      })
+        .setTween([pinMsgTween, pinMsgTween2])
+        .addTo(this.MagicController);
+      // eslint-disable-next-line no-unused-vars
       var scene2 = new ScrollMagic.Scene({
-        offset: screen.height / 3, // start scene after scrolling for 100px
-        duration: (screen.height / 3) * 2 - 200, // pin the element for 400px of scrolling
+        offset: (window.innerHeight / 3) * 2, // start scene after scrolling for 100px
+        duration: window.innerHeight / 3, // pin the element for 400px of scrolling
         // duration: (screen.height / 3) * 2 - 100, // pin the element for 400px of scrolling
-        triggerElement: this.$people, // starting scene, when reaching this element
+        triggerElement: this.$secondpage, // starting scene, when reaching this element
         triggerHook: 0, // don't trigger until #pinned-trigger1 hits the top of the viewport
       })
         .setTween(subtitle)
         .addTo(this.MagicController);
 
       scene.on("end", () => {
-        vm.lottieD.playSegments([0, 16], true);
         vm.nowScene = [0, 16];
+        vm.lottieD.playSegments(vm.nowScene, true);
       });
       scene.on("progress", function(event) {
         console.log("Scene progress changed to " + event.progress);
         console.log(10 + Math.floor(event.progress * 10));
         var frame = 43 + Math.floor(event.progress * 10);
+        if (event.progress == 0) {
+          vm.nowScene = [17, 32];
+        }
         if (frame > 43 && frame < 53) {
           vm.lottieD.goToAndStop(frame, true);
         } else {
-          vm.lottieD.playSegments([17, 32], true);
+          vm.lottieD.playSegments(vm.nowScene, true);
         }
       });
     },
@@ -262,7 +345,10 @@ export default {
       transform: translateX(-50%);
       font-size: 1.5rem;
       color: white;
-      animation: shake 0.4s infinite alternate ease-in-out;
+      animation: shake 0.5s infinite alternate ease-in-out;
+    }
+    .innerpageL {
+      margin-left: 20px;
     }
     .innerpage {
       max-width: 650px;
@@ -289,10 +375,12 @@ export default {
         margin-bottom: 20px;
       }
       .subtitle {
+        display: flex;
         width: 100%;
         font-size: 2rem;
         text-align: left;
         color: white;
+        position: relative;
         &:hover {
           color: #ffdd51;
         }
@@ -314,6 +402,11 @@ export default {
 }
 .containers {
   margin: 10px;
+  &:hover {
+    animation: neo 0.3s infinite alternate ease-in-out;
+    text-shadow: 0 0 5px #378f99, 0 0 5px #378f99, 0 0 60px #45e4fc,
+      0 0 20px #45e4fc;
+  }
 }
 .titles {
   color: #ffdd51;
@@ -321,6 +414,7 @@ export default {
   display: flex;
   font-size: 8rem;
   transform: skew(0deg, -5deg);
+
   cursor: pointer;
   // text-shadow: 5px 5px 0px rgb(87, 31, 124);
   .t {
@@ -376,5 +470,109 @@ export default {
   border-radius: 12px;
   overflow: hidden;
   color: white;
+}
+
+.stickyball {
+  width: 30px;
+  display: flex;
+  position: absolute;
+  top: 50%;
+  left: 2%;
+  transform: translate(0%, -50%);
+  .ball {
+    width: 10px;
+    height: 10px;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    filter: blur(3px) contrast(10);
+    transform: translate(-50%, 0%);
+  }
+  .ballL {
+    transform: translate(-50%, 60%);
+    animation: stickyL 1s infinite alternate ease-in-out;
+  }
+  .ballR {
+    transform: translate(-50%, -60%);
+    animation: stickyR 1s infinite alternate ease-in-out;
+  }
+}
+@keyframes stickyL {
+  0% {
+    transform: translate(-50%, 0%);
+  }
+  100% {
+    transform: translate(-50%, 300%);
+  }
+}
+@keyframes stickyR {
+  0% {
+    transform: translate(-50%, 0%);
+  }
+  100% {
+    transform: translate(-50%, -300%);
+  }
+}
+@keyframes neo {
+  0% {
+    filter: brightness(1);
+  }
+  3% {
+    filter: brightness(0.8);
+  }
+  6% {
+    filter: brightness(1);
+  }
+  9% {
+    filter: brightness(1);
+  }
+  12% {
+    filter: brightness(0.9);
+  }
+  15% {
+    filter: brightness(1);
+  }
+
+  41% {
+    filter: brightness(0.95);
+  }
+  46% {
+    filter: brightness(1);
+  }
+
+  68% {
+    filter: brightness(0.95);
+  }
+
+  100% {
+    filter: brightness(1);
+  }
+}
+.pin {
+  z-index: 999;
+  position: fixed;
+  right: 0;
+  top: 50%;
+  display: flex;
+  flex-direction: row;
+  transform: translate(0%, -50%);
+  .msgbox {
+    position: relative;
+    .box {
+      display: flex;
+      position: absolute;
+      color: white;
+      right: 10px;
+      top: -10px;
+    }
+  }
+  .line {
+    width: 20px;
+    height: 2px;
+    background-color: #fff;
+  }
+  .msg {
+    color: white;
+  }
 }
 </style>

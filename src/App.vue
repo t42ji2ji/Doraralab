@@ -3,7 +3,7 @@
     .cursor(ref="cursor")
     .icons
       .icon
-        <font-awesome-icon icon="envelope" />
+        <font-awesome-icon icon="envelope" href="https//:www.google.com" />
       .icon
         <font-awesome-icon icon="basketball-ball" />
 
@@ -139,6 +139,7 @@ body {
     display: block;
     &:hover {
       font-size: 2rem;
+      color: #ffdd51;
     }
   }
 }
